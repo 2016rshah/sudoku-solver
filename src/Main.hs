@@ -1,6 +1,7 @@
 module Main where
 
 import Data.Char
+import Data.List
 
 main = print "Welcome to the sudoku solver!"
 
@@ -83,3 +84,12 @@ lineToRow = reverse . foldl (\acc curr -> (charToCell curr):acc) []
 charToCell :: Char -> Maybe Int
 charToCell '.' = Nothing
 charToCell c = Just (digitToInt c)
+
+--Skipping C because I don't want to do that. I'll come back to it if I need it
+
+type Block = [Maybe Int]
+
+--D1
+isOkayBlock :: Block -> Bool
+isOkayBlock b = vals == (nub vals)
+  where vals = filter (/=Nothing) b
