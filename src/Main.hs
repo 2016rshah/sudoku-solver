@@ -3,7 +3,11 @@ module Main where
 import Data.Char
 import Data.List
 
-main = print "Welcome to the sudoku solver!"
+main = do 
+  s <- readSudoku "src/board.txt"
+  putStrLn "Showing the input sudoku"
+  printSudoku s
+
 
 data Sudoku = Sudoku [[Maybe Int]]
             deriving Show
@@ -93,3 +97,9 @@ type Block = [Maybe Int]
 isOkayBlock :: Block -> Bool
 isOkayBlock b = vals == (nub vals)
   where vals = filter (/=Nothing) b
+
+--D2
+--blocks :: Sudoku -> [Block]
+--blocks (Sudoku rs) = block1 : block2 : block3 : block4 : block5 : block6 : block7 : block8 : block9 : []
+--  where block1 = [(rs!!0)!!0] ++ [(rs!!0)!!1] ++ [(rs!!0)!!2] ++ [(rs!!1)!!0] ++ [(rs!!1)!!1] ++ [(rs!!1)!!2]++ [(rs!!2)!!0] ++ [(rs!!2)!!1] ++ [(rs!!2)!!2]  
+--        block2 = 
