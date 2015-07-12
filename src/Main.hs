@@ -106,3 +106,23 @@ blocks (Sudoku rs) =  (map concat . groupBy3 . concat . transpose . map groupBy3
     groupBy3 :: [t] -> [[t]]
     groupBy3 (a:b:c:ds) = [a,b,c] : groupBy3 ds
     groupBy3 []         = []
+
+--D3
+isOkaySection :: [Maybe Int] -> Bool
+isOkaySection s = vals == (nub vals)
+  where vals = filter (/=Nothing) s
+
+columns :: [[Maybe Int]] -> [[Maybe Int]]
+columns rs 
+  | (column . map (drop 1)) rs == [] = rs
+  | otherwise = (column rs) : (columns . map (drop 1)) rs 
+
+column :: [[Maybe Int]] -> [Maybe Int]
+column = concatMap (take 1)
+
+isOkay :: Sudoku -> Bool
+isOkay s@(Sudoku rs) = isOkayBlocks && isOkayRows && isOkayCols
+  where
+    isOkayBlocks = foldl (\acc currBlock -> acc && (isOkayBlock currBlock)) True (blocks s)
+    isOkayRows = foldl (\acc currRow -> acc && (isOkaySection currRow)) True rs
+    isOkayCols = foldl (\acc currCol -> acc && (isOkaySection currCol)) True (columns rs)
