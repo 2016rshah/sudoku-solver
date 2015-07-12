@@ -99,7 +99,10 @@ isOkayBlock b = vals == (nub vals)
   where vals = filter (/=Nothing) b
 
 --D2
---blocks :: Sudoku -> [Block]
---blocks (Sudoku rs) = block1 : block2 : block3 : block4 : block5 : block6 : block7 : block8 : block9 : []
---  where block1 = [(rs!!0)!!0] ++ [(rs!!0)!!1] ++ [(rs!!0)!!2] ++ [(rs!!1)!!0] ++ [(rs!!1)!!1] ++ [(rs!!1)!!2]++ [(rs!!2)!!0] ++ [(rs!!2)!!1] ++ [(rs!!2)!!2]  
---        block2 = 
+--http://stackoverflow.com/a/31361604/3861396
+blocks :: Sudoku  -> [Block]
+blocks (Sudoku rs) =  (map concat . groupBy3 . concat . transpose . map groupBy3) rs 
+  where
+    groupBy3 :: [t] -> [[t]]
+    groupBy3 (a:b:c:ds) = [a,b,c] : groupBy3 ds
+    groupBy3 []         = []
