@@ -2,15 +2,43 @@ module Main where
 
 import Data.Char
 import Data.List
+import Data.Maybe
 
-main = do 
-  s <- readSudoku "src/board.txt"
-  putStrLn "Showing the input sudoku"
-  printSudoku s
+main = do
+  --examples
+  mediums
+  --hards
+  
+
+examples :: IO ()
+examples  = do
+  putStrLn "\nExample solve. Should return solved board"
+  readAndSolve "src/boards/examples/example.sud"
+  putStrLn "\nImpossible board to solve"
+  readAndSolve "src/examples/impossible.sud"
+
+mediums :: IO ()
+mediums = do 
+  putStrLn "\nMedium examples\n"
+  readAndSolve "src/boards/mediums/ex2.sud"
+  putStrLn ""
+  readAndSolve "src/boards/mediums/ex3.sud"
+  putStrLn ""
+  readAndSolve "src/boards/mediums/ex4.sud"
+
+hards :: IO ()
+hards = do
+  putStrLn "\nHard example"
+  readAndSolve "src/boards/hards/ex2.sud"
+
+readAndSolve :: FilePath -> IO ()
+readAndSolve s = do
+  sud <- readSudoku s
+  printSudoku (fromJust (solve sud))
 
 
 data Sudoku = Sudoku [[Maybe Int]]
-            deriving Show
+            deriving (Show, Eq)
 
 rows :: Sudoku -> [[Maybe Int]]
 rows (Sudoku rs) = rs
@@ -120,6 +148,7 @@ columns rs
 column :: [[Maybe Int]] -> [Maybe Int]
 column = concatMap (take 1)
 
+--No duplicates
 isOkay :: Sudoku -> Bool
 isOkay s@(Sudoku rs) = isOkayBlocks && isOkayRows && isOkayCols
   where
@@ -136,6 +165,9 @@ nothings rs = [(i, j) | i <- [0..length rs - 1], j <- [0..length (rs!!i) - 1], (
 blank :: Sudoku -> Pos
 blank (Sudoku rs) = head (nothings rs)
 
+--X
+--rowBlanks
+
 --E2
 (!!=) :: [a] -> (Int,a) -> [a]
 (!!=) xs (i, v) = [if (j==i) then v else xs!!j | j <- [0..length xs - 1]]
@@ -143,3 +175,11 @@ blank (Sudoku rs) = head (nothings rs)
 --E3
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
 update (Sudoku rs) (i, j) v = Sudoku [if (ii == i) then (rs!!ii) !!= (j, v) else rs!!ii | ii <- [0..length rs - 1]]
+
+--F1
+solve :: Sudoku -> Maybe Sudoku
+solve sud@(Sudoku rs) 
+  | not (isOkay sud) || not (isSudoku sud) = Nothing
+  | isSolved sud = Just sud
+  | otherwise = if solutions == [] then Nothing else head solutions 
+    where solutions = filter (/= Nothing) [solve (update sud (blank sud) (Just v)) | v <- [1..9]] 
