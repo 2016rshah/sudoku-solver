@@ -126,3 +126,12 @@ isOkay s@(Sudoku rs) = isOkayBlocks && isOkayRows && isOkayCols
     isOkayBlocks = foldl (\acc currBlock -> acc && (isOkayBlock currBlock)) True (blocks s)
     isOkayRows = foldl (\acc currRow -> acc && (isOkaySection currRow)) True rs
     isOkayCols = foldl (\acc currCol -> acc && (isOkaySection currCol)) True (columns rs)
+
+--E1
+type Pos = (Int, Int)
+
+nothings :: [[Maybe Int]] -> [Pos]
+nothings rs = [(i, j) | i <- [0..length rs - 1], j <- [0..length (rs!!i) - 1], (rs!!i)!!j == Nothing]
+
+blank :: Sudoku -> Pos
+blank (Sudoku rs) = head (nothings rs)
