@@ -135,3 +135,11 @@ nothings rs = [(i, j) | i <- [0..length rs - 1], j <- [0..length (rs!!i) - 1], (
 
 blank :: Sudoku -> Pos
 blank (Sudoku rs) = head (nothings rs)
+
+--E2
+(!!=) :: [a] -> (Int,a) -> [a]
+(!!=) xs (i, v) = [if (j==i) then v else xs!!j | j <- [0..length xs - 1]]
+
+--E3
+update :: Sudoku -> Pos -> Maybe Int -> Sudoku
+update (Sudoku rs) (i, j) v = Sudoku [if (ii == i) then (rs!!ii) !!= (j, v) else rs!!ii | ii <- [0..length rs - 1]]
