@@ -5,8 +5,8 @@ name:                sudoku-solver
 version:             0.1.0.0
 -- synopsis:            
 -- description:         
-license:             Apache-2.0
-license-file:        LICENSE
+license:             PublicDomain
+license-file:        README.md
 author:              Rushi Shah
 
 maintainer:          2016rshah@gmail.com
