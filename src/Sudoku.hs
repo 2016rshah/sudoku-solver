@@ -114,11 +114,26 @@ type Pos = (Int, Int)
 nothings :: [[Maybe Int]] -> [Pos]
 nothings rs = [(i, j) | i <- [0..length rs - 1], j <- [0..length (rs!!i) - 1], (rs!!i)!!j == Nothing]
 
-blank :: Sudoku -> Pos
-blank (Sudoku rs) = head (nothings rs)
+hSort :: [[Maybe Int]] -> [Pos]
+hSort rs = sortBy (\a b -> sortNothings rs a b) (nothings rs)
 
---X
---rowBlanks
+numNothings :: [Maybe Int] -> Int
+numNothings = foldl (\acc curr -> if curr == Nothing then acc+1 else acc) 0 
+
+sortNothings :: [[Maybe Int]] -> Pos -> Pos -> Ordering
+sortNothings rs (r1, c1) (r2, c2) 
+	| h1 < h2 = LT 
+	| h1 > h2 = GT
+	| otherwise=compare h3 h4
+	where
+		h1 = numNothings (rs !! r1)
+		h2 = numNothings (rs !! r2)
+		h3 = numNothings ((columns rs) !! c1)
+		h4 = numNothings ((columns rs) !! c2)
+
+blank :: Sudoku -> Pos
+blank sud@(Sudoku rs) = head $ hSort rs
+--blank (Sudoku rs) = head $ nothings rs
 
 --E2
 (!!=) :: [a] -> (Int,a) -> [a]

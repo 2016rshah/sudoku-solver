@@ -4,14 +4,15 @@ import Sudoku
 import Data.Maybe
 
 main = do
-  examples
-  --mediums
+  --examples
+  mediums
   --hards
 
 readAndSolve :: FilePath -> IO ()
 readAndSolve s = do
   sud <- readSudoku s
-  printSudoku (fromJust (solve sud))
+  let solved = solve sud
+  if solved == Nothing then putStrLn "Nothing" else printSudoku (fromJust solved)
 
 examples :: IO ()
 examples  = do
