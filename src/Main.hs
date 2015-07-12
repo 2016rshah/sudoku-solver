@@ -5,14 +5,22 @@ import Data.Maybe
 
 main = do
   --examples
-  mediums
+  --mediums
   --hards
+  euler
 
 readAndSolve :: FilePath -> IO ()
 readAndSolve s = do
   sud <- readSudoku s
   let solved = solve sud
   if solved == Nothing then putStrLn "Nothing" else printSudoku (fromJust solved)
+
+euler :: IO ()
+euler = do 
+  putStrLn "\nhttps://projecteuler.net/project/resources/p096_sudoku.txt"
+  readAndSolve "src/boards/euler/01.sud"
+  putStrLn ""
+  readAndSolve "src/boards/euler/50.sud"
 
 examples :: IO ()
 examples  = do
@@ -31,11 +39,14 @@ mediums = do
   readAndSolve "src/boards/mediums/ex3.sud"
   putStrLn ""
   readAndSolve "src/boards/mediums/ex4.sud"
+  putStrLn ""
+  readAndSolve "src/boards/mediums/ex5.sud"
 
 hards :: IO ()
 hards = do
   putStrLn "\nHard example"
-  readAndSolve "src/boards/hards/ex2.sud"
+  --readAndSolve "src/boards/hards/ex2.sud"
+  readAndSolve "src/boards/hards/ex13.sud"
 
 example :: Sudoku
 example =

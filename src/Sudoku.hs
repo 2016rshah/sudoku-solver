@@ -108,7 +108,7 @@ isOkay s@(Sudoku rs) = isOkayBlocks && isOkayRows && isOkayCols
     isOkayRows = foldl (\acc currRow -> acc && (isOkaySection currRow)) True rs
     isOkayCols = foldl (\acc currCol -> acc && (isOkaySection currCol)) True (columns rs)
 
---E1
+--E1 and X
 type Pos = (Int, Int)
 
 nothings :: [[Maybe Int]] -> [Pos]
@@ -142,6 +142,13 @@ blank sud@(Sudoku rs) = head $ hSort rs
 --E3
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
 update (Sudoku rs) (i, j) v = Sudoku [if (ii == i) then (rs!!ii) !!= (j, v) else rs!!ii | ii <- [0..length rs - 1]]
+
+--Y
+--pRows :: Sudoku -> Sudoku 
+--pRows (Sudoku rs) = (filter (==1) . map numNothings) rs
+
+--propogate :: Sudoku -> Sudoku
+--propogate = pRows
 
 --F1
 solve :: Sudoku -> Maybe Sudoku
