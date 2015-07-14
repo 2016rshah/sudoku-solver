@@ -1,6 +1,6 @@
 #Sudoku Solver 
 
-I decided to make a sudoku solving AI in Haskell. 
+:pencil: A simple Sudoku solving AI written in Haskell. 
 
 ##Usage
 
