@@ -1,13 +1,20 @@
 module Main where
 
 import Sudoku
+
 import Data.Maybe
+import System.Environment (getArgs)
 
 main = do
-  --examples
-  --mediums
-  --hards
-  euler
+  args <- getArgs
+  case args of 
+    (c:cs) -> case c of
+      "examples" -> examples
+      "mediums" -> mediums
+      "hards" -> hards
+      "euler" -> euler
+      _ -> mediums
+    _ -> mediums
 
 readAndSolve :: FilePath -> IO ()
 readAndSolve s = do
