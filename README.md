@@ -1,6 +1,6 @@
 #Sudoku Solver 
 
-I decided to make a sudoku solving AI. But I decided to do it in Haskell because I hate myself.
+I decided to make a sudoku solving AI in Haskell. 
 
 ##Usage
 
