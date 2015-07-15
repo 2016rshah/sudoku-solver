@@ -18,34 +18,32 @@ allBlankSudoku = Sudoku (take 9 (repeat row))
 isSudoku :: Sudoku -> Bool
 isSudoku (Sudoku rs) = correctLen rs && lenColsWorks rs && digitsInRange rs
   where
-    allTrue :: [Bool] -> Bool
-    allTrue = foldl (\acc curr -> acc && curr) True
-
     correctLen :: [a] -> Bool
-    correctLen rs = (length rs) == 9
+    correctLen = (9 ==) . length
 
     lenColsWorks :: [[a]] -> Bool
-    lenColsWorks = allTrue . map correctLen
+    lenColsWorks = all (== True) . map correctLen
 
     digitsInRange :: [[Maybe Int]] -> Bool
-    digitsInRange = allTrue . map helper 
+    digitsInRange = all (== True) . map helper 
       where
         helper :: [Maybe Int] -> Bool
-        helper = allTrue . map (\x -> x `elem` Nothing:[Just x | x <- [1..9]]) 
+        helper = all (== True) . map (\x -> x `elem` Nothing:[Just x | x <- [1..9]]) 
 
 --A3
 isSolved :: Sudoku -> Bool
-isSolved (Sudoku rs) = foldl (\acc curr -> acc && not (Nothing `elem` curr)) True rs  
+isSolved (Sudoku rs) = (all (== True) . map (not . elem Nothing)) rs 
 
 --B1
 printSudoku :: Sudoku -> IO ()
 printSudoku (Sudoku rs) = (putStr . stringifySudoku) rs
 
 stringifySudoku :: [[Maybe Int]]  -> String
-stringifySudoku = foldl (\acc curr -> acc ++ printRow curr) "" 
+stringifySudoku = concatMap printRow 
+
 
 printRow :: [Maybe Int] -> String
-printRow row = reverse $ '\n' : (foldl (\acc curr -> (printCell curr):acc) "" row)
+printRow row = (map printCell row) ++ "\n"
 
 printCell :: Maybe Int -> Char
 printCell Nothing = '.'
@@ -60,10 +58,10 @@ readSudoku file = do
   return (parseSudoku f)
 
 parseSudoku :: String -> Sudoku
-parseSudoku = (Sudoku . reverse . foldl (\acc curr -> (lineToRow curr):acc) [] . lines)
+parseSudoku = (Sudoku . map lineToRow . lines)
 
 lineToRow :: String -> [Maybe Int]
-lineToRow = reverse . foldl (\acc curr -> (charToCell curr):acc) []  
+lineToRow = map charToCell
 
 charToCell :: Char -> Maybe Int
 charToCell '.' = Nothing
@@ -71,17 +69,10 @@ charToCell c = Just (digitToInt c)
 
 --Skipping C because I don't want to do that. I'll come back to it if I need it
 
-type Block = [Maybe Int]
-
---D1
-isOkayBlock :: Block -> Bool
-isOkayBlock b = vals == (nub vals)
-  where vals = filter (/=Nothing) b
-
 --D2
 --http://stackoverflow.com/a/31361604/3861396
-blocks :: Sudoku  -> [Block]
-blocks (Sudoku rs) =  (map concat . groupBy3 . concat . transpose . map groupBy3) rs 
+blocks :: [[Maybe Int]]  -> [[Maybe Int]]
+blocks =  (map concat . groupBy3 . concat . transpose . map groupBy3)
   where
     groupBy3 :: [t] -> [[t]]
     groupBy3 (a:b:c:ds) = [a,b,c] : groupBy3 ds
@@ -102,11 +93,10 @@ column = concatMap (take 1)
 
 --No duplicates
 isOkay :: Sudoku -> Bool
-isOkay s@(Sudoku rs) = isOkayBlocks && isOkayRows && isOkayCols
+isOkay s@(Sudoku rs) = (g rs) && ((g . blocks) rs) && ((g . columns) rs)
   where
-    isOkayBlocks = foldl (\acc currBlock -> acc && (isOkayBlock currBlock)) True (blocks s)
-    isOkayRows = foldl (\acc currRow -> acc && (isOkaySection currRow)) True rs
-    isOkayCols = foldl (\acc currCol -> acc && (isOkaySection currCol)) True (columns rs)
+    g = all (== True) . map isOkaySection 
+
 
 --E1 and X
 type Pos = (Int, Int)
@@ -118,7 +108,11 @@ hSort :: [[Maybe Int]] -> [Pos]
 hSort rs = sortBy (\a b -> sortNothings rs a b) (nothings rs)
 
 numNothings :: [Maybe Int] -> Int
-numNothings = foldl (\acc curr -> if curr == Nothing then acc+1 else acc) 0 
+numNothings = foldl f 0 
+  where 
+    f acc curr 
+      | curr == Nothing = acc+1
+      | otherwise = acc
 
 sortNothings :: [[Maybe Int]] -> Pos -> Pos -> Ordering
 sortNothings rs (r1, c1) (r2, c2) 
