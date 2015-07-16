@@ -3,20 +3,20 @@ module Sudoku where
 import Data.Char
 import Data.List
 
-data Sudoku = Sudoku [[Maybe Int]]
-            deriving (Show, Eq)
+type Block = [Maybe Int]
+type Sudoku = [Block]
 
 rows :: Sudoku -> [[Maybe Int]]
-rows (Sudoku rs) = rs
+rows rs = rs
 
 --A1
 allBlankSudoku :: Sudoku
-allBlankSudoku = Sudoku (take 9 (repeat row))
+allBlankSudoku = (take 9 (repeat row))
   where row = take 9 (repeat Nothing)
 
 --A2
 isSudoku :: Sudoku -> Bool
-isSudoku (Sudoku rs) = correctLen rs && lenColsWorks rs && digitsInRange rs
+isSudoku rs = correctLen rs && lenColsWorks rs && digitsInRange rs
   where
     correctLen :: [a] -> Bool
     correctLen = (9 ==) . length
@@ -24,25 +24,25 @@ isSudoku (Sudoku rs) = correctLen rs && lenColsWorks rs && digitsInRange rs
     lenColsWorks :: [[a]] -> Bool
     lenColsWorks = all (== True) . map correctLen
 
-    digitsInRange :: [[Maybe Int]] -> Bool
+    digitsInRange :: Sudoku -> Bool
     digitsInRange = all (== True) . map helper 
       where
-        helper :: [Maybe Int] -> Bool
+        helper :: Block -> Bool
         helper = all (== True) . map (\x -> x `elem` Nothing:[Just x | x <- [1..9]]) 
 
 --A3
 isSolved :: Sudoku -> Bool
-isSolved (Sudoku rs) = (all (== True) . map (not . elem Nothing)) rs 
+isSolved rs = (all (== True) . map (not . elem Nothing)) rs 
 
 --B1
 printSudoku :: Sudoku -> IO ()
-printSudoku (Sudoku rs) = (putStr . stringifySudoku) rs
+printSudoku rs = (putStr . stringifySudoku) rs
 
-stringifySudoku :: [[Maybe Int]]  -> String
+stringifySudoku :: Sudoku  -> String
 stringifySudoku = concatMap printRow 
 
 
-printRow :: [Maybe Int] -> String
+printRow :: Block -> String
 printRow row = (map printCell row) ++ "\n"
 
 printCell :: Maybe Int -> Char
@@ -58,20 +58,18 @@ readSudoku file = do
   return (parseSudoku f)
 
 parseSudoku :: String -> Sudoku
-parseSudoku = (Sudoku . map lineToRow . lines)
+parseSudoku = (map lineToRow . lines)
 
-lineToRow :: String -> [Maybe Int]
+lineToRow :: String -> Block
 lineToRow = map charToCell
 
 charToCell :: Char -> Maybe Int
 charToCell '.' = Nothing
 charToCell c = Just (digitToInt c)
 
---Skipping C because I don't want to do that. I'll come back to it if I need it
-
 --D2
 --http://stackoverflow.com/a/31361604/3861396
-blocks :: [[Maybe Int]]  -> [[Maybe Int]]
+blocks :: Sudoku  -> [Block]
 blocks =  (map concat . groupBy3 . concat . transpose . map groupBy3)
   where
     groupBy3 :: [t] -> [[t]]
@@ -79,21 +77,21 @@ blocks =  (map concat . groupBy3 . concat . transpose . map groupBy3)
     groupBy3 []         = []
 
 --D3
-isOkaySection :: [Maybe Int] -> Bool
+isOkaySection :: Block -> Bool
 isOkaySection s = vals == (nub vals)
   where vals = filter (/=Nothing) s
 
-columns :: [[Maybe Int]] -> [[Maybe Int]]
+columns :: Sudoku -> Sudoku
 columns rs 
   | (column . map (drop 1)) rs == [] = rs
   | otherwise = (column rs) : (columns . map (drop 1)) rs 
 
-column :: [[Maybe Int]] -> [Maybe Int]
+column :: Sudoku -> Block
 column = concatMap (take 1)
 
 --No duplicates
 isOkay :: Sudoku -> Bool
-isOkay s@(Sudoku rs) = (g rs) && ((g . blocks) rs) && ((g . columns) rs)
+isOkay rs = (g rs) && ((g . blocks) rs) && ((g . columns) rs)
   where
     g = all (== True) . map isOkaySection 
 
@@ -101,20 +99,20 @@ isOkay s@(Sudoku rs) = (g rs) && ((g . blocks) rs) && ((g . columns) rs)
 --E1 and X
 type Pos = (Int, Int)
 
-nothings :: [[Maybe Int]] -> [Pos]
+nothings :: Sudoku -> [Pos]
 nothings rs = [(i, j) | i <- [0..length rs - 1], j <- [0..length (rs!!i) - 1], (rs!!i)!!j == Nothing]
 
-hSort :: [[Maybe Int]] -> [Pos]
+hSort :: Sudoku -> [Pos]
 hSort rs = sortBy (\a b -> sortNothings rs a b) (nothings rs)
 
-numNothings :: [Maybe Int] -> Int
+numNothings :: Block -> Int
 numNothings = foldl f 0 
   where 
     f acc curr 
       | curr == Nothing = acc+1
       | otherwise = acc
 
-sortNothings :: [[Maybe Int]] -> Pos -> Pos -> Ordering
+sortNothings :: Sudoku -> Pos -> Pos -> Ordering
 sortNothings rs (r1, c1) (r2, c2) 
 	| h1 < h2 = LT 
 	| h1 > h2 = GT
@@ -126,7 +124,7 @@ sortNothings rs (r1, c1) (r2, c2)
 		h4 = numNothings ((columns rs) !! c2)
 
 blank :: Sudoku -> Pos
-blank sud@(Sudoku rs) = head $ hSort rs
+blank rs = head $ hSort rs
 --blank (Sudoku rs) = head $ nothings rs
 
 --E2
@@ -135,7 +133,7 @@ blank sud@(Sudoku rs) = head $ hSort rs
 
 --E3
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
-update (Sudoku rs) (i, j) v = Sudoku [if (ii == i) then (rs!!ii) !!= (j, v) else rs!!ii | ii <- [0..length rs - 1]]
+update rs (i, j) v = [if (ii == i) then (rs!!ii) !!= (j, v) else rs!!ii | ii <- [0..length rs - 1]]
 
 --Y
 --pRows :: Sudoku -> Sudoku 
@@ -146,7 +144,7 @@ update (Sudoku rs) (i, j) v = Sudoku [if (ii == i) then (rs!!ii) !!= (j, v) else
 
 --F1
 solve :: Sudoku -> Maybe Sudoku
-solve sud@(Sudoku rs) 
+solve sud
   | not (isOkay sud) || not (isSudoku sud) = Nothing
   | isSolved sud = Just sud
   | otherwise = if solutions == [] then Nothing else head solutions 
