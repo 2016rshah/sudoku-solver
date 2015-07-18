@@ -3,6 +3,7 @@ module Main where
 import Sudoku
 
 import Data.Maybe
+import Data.List
 import System.Environment (getArgs)
 
 main = do
@@ -16,11 +17,18 @@ main = do
       _ -> mediums
     _ -> mediums
 
+
+printBoardAndSolution :: Sudoku -> IO ()
+printBoardAndSolution sud = (putStrLn . intercalate "\n") $ zipWith (\m n -> m++"  -->  "++n) (f sud) (f solved)
+  where 
+    f = lines . stringifySudoku
+    solvedMaybe = solve sud
+    solved = if Nothing == solvedMaybe then allBlankSudoku else fromJust solvedMaybe
+
 readAndSolve :: FilePath -> IO ()
 readAndSolve s = do
   sud <- readSudoku s
-  let solved = solve sud
-  if solved == Nothing then putStrLn "Nothing" else printSudoku (fromJust solved)
+  printBoardAndSolution sud
 
 euler :: IO ()
 euler = do 
@@ -31,11 +39,9 @@ euler = do
 
 examples :: IO ()
 examples  = do
-  putStrLn "\nExample solve from hard coded board"
-  printSudoku (fromJust (solve example))
-  putStrLn "\nExample solve reading from file"
+  putStrLn "\nExample solve"
   readAndSolve "src/boards/examples/example.sud"
-  putStrLn "\nImpossible board to solve"
+  putStrLn "\nImpossible board"
   readAndSolve "src/boards/examples/impossible.sud"
 
 mediums :: IO ()

@@ -36,14 +36,14 @@ isSolved rs = (all (== True) . map (not . elem Nothing)) rs
 
 --B1
 printSudoku :: Sudoku -> IO ()
-printSudoku rs = (putStr . stringifySudoku) rs
+printSudoku rs = putStr $ stringifySudoku rs
 
 stringifySudoku :: Sudoku  -> String
 stringifySudoku = concatMap printRow 
 
 
 printRow :: Block -> String
-printRow row = (map printCell row) ++ "\n"
+printRow row = map printCell row ++ "\n"
 
 printCell :: Maybe Int -> Char
 printCell Nothing = '.'
