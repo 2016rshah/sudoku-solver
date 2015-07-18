@@ -1,6 +1,7 @@
 module Sudoku where
 
 import Data.Char
+import Data.Maybe
 import Data.List
 
 type Block = [Maybe Int]
@@ -81,7 +82,7 @@ isOkaySection :: Block -> Bool
 isOkaySection s = vals == (nub vals)
   where vals = filter (/=Nothing) s
 
-columns :: Sudoku -> Sudoku
+columns :: Sudoku -> [Block]
 columns rs 
   | (column . map (drop 1)) rs == [] = rs
   | otherwise = (column rs) : (columns . map (drop 1)) rs 
@@ -142,10 +143,29 @@ update rs (i, j) v = [if (ii == i) then (rs!!ii) !!= (j, v) else rs!!ii | ii <- 
 --propogate :: Sudoku -> Sudoku
 --propogate = pRows
 
+
+--Heuristic to check what has already been used in col/row/block
+rowOptions :: Sudoku -> Pos -> [Int]
+rowOptions sud (i, _) = [x | x <- [1..9], not (elem x r)]
+  where r = [fromJust y | y<-(sud!!i), y /= Nothing]
+
+colOptions :: Sudoku -> Pos -> [Int]
+colOptions sud (_, j) = [x | x <- [1..9], not (elem x cs)]
+  where cs = [fromJust y | y<-(columns sud)!!j, y /= Nothing]
+
+options :: Sudoku -> Pos -> [Int]
+options sud p = [x | x <- [1..9], notInRows x, notInCols x]
+  where 
+    notInRows y = (elem y (rowOptions sud p))
+    notInCols y = (elem y (colOptions sud p))
+    --Not implementing block yet because it would be significantly more difficult than row/col
+
 --F1
 solve :: Sudoku -> Maybe Sudoku
 solve sud
   | not (isOkay sud) || not (isSudoku sud) = Nothing
   | isSolved sud = Just sud
   | otherwise = if solutions == [] then Nothing else head solutions 
-    where solutions = filter (/= Nothing) [solve (update sud (blank sud) (Just v)) | v <- [1..9]] 
+    where 
+      pos = blank sud
+      solutions = filter (/= Nothing) [solve (update sud pos (Just v)) | v <- (options sud pos)] 
