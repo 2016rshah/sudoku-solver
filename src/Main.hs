@@ -23,7 +23,7 @@ printBoardAndSolution sud = (putStrLn . intercalate "\n") $ zipWith (\m n -> m++
   where 
     f = lines . stringifySudoku
     solvedMaybe = solve sud
-    solved = if Nothing == solvedMaybe then allBlankSudoku else fromJust solvedMaybe
+    solved = if isNothing solvedMaybe then allBlankSudoku else fromJust solvedMaybe
 
 readAndSolve :: FilePath -> IO ()
 readAndSolve s = do
