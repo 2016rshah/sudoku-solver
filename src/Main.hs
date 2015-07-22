@@ -58,8 +58,8 @@ mediums = do
 hards :: IO ()
 hards = do
   putStrLn "\nHard example"
-  --readAndSolve "src/boards/hards/ex2.sud"
-  readAndSolve "src/boards/hards/ex13.sud"
+  readAndSolve "src/boards/hards/ex2.sud"
+  --readAndSolve "src/boards/hards/ex13.sud"
 
 example :: Sudoku
 example =

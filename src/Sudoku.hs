@@ -12,8 +12,8 @@ rows rs = rs
 
 --A1
 allBlankSudoku :: Sudoku
-allBlankSudoku = (take 9 (repeat row))
-  where row = take 9 (repeat Nothing)
+allBlankSudoku = replicate 9 row
+  where row = replicate 9 Nothing
 
 --A2
 isSudoku :: Sudoku -> Bool
@@ -33,7 +33,7 @@ isSudoku rs = correctLen rs && lenColsWorks rs && digitsInRange rs
 
 --A3
 isSolved :: Sudoku -> Bool
-isSolved rs = (all (== True) . map (not . elem Nothing)) rs 
+isSolved = (all (== True) . map (notElem Nothing))
 
 --B1
 printSudoku :: Sudoku -> IO ()
@@ -59,7 +59,7 @@ readSudoku file = do
   return (parseSudoku f)
 
 parseSudoku :: String -> Sudoku
-parseSudoku = (map lineToRow . lines)
+parseSudoku = map lineToRow . lines
 
 lineToRow :: String -> Block
 lineToRow = map charToCell
@@ -71,7 +71,7 @@ charToCell c = Just (digitToInt c)
 --D2
 --http://stackoverflow.com/a/31361604/3861396
 blocks :: Sudoku  -> [Block]
-blocks =  (map concat . groupBy3 . concat . transpose . map groupBy3)
+blocks =  map concat . groupBy3 . concat . transpose . map groupBy3
   where
     groupBy3 :: [t] -> [[t]]
     groupBy3 (a:b:c:ds) = [a,b,c] : groupBy3 ds
@@ -79,13 +79,13 @@ blocks =  (map concat . groupBy3 . concat . transpose . map groupBy3)
 
 --D3
 isOkaySection :: Block -> Bool
-isOkaySection s = vals == (nub vals)
+isOkaySection s = vals == nub vals
   where vals = filter (/=Nothing) s
 
 columns :: Sudoku -> [Block]
 columns rs 
-  | (column . map (drop 1)) rs == [] = rs
-  | otherwise = (column rs) : (columns . map (drop 1)) rs 
+  | null ((column . map (drop 1)) rs) = rs
+  | otherwise = column rs : (columns . map (drop 1)) rs 
 
 column :: Sudoku -> Block
 column = concatMap (take 1)
@@ -101,16 +101,16 @@ isOkay rs = (g rs) && ((g . blocks) rs) && ((g . columns) rs)
 type Pos = (Int, Int)
 
 nothings :: Sudoku -> [Pos]
-nothings rs = [(i, j) | i <- [0..length rs - 1], j <- [0..length (rs!!i) - 1], (rs!!i)!!j == Nothing]
+nothings rs = [(i, j) | i <- [0..length rs - 1], j <- [0..length (rs!!i) - 1], isNothing ((rs !! i) !! j)]
 
 hSort :: Sudoku -> [Pos]
-hSort rs = sortBy (\a b -> sortNothings rs a b) (nothings rs)
+hSort rs = sortBy (sortNothings rs) (nothings rs)
 
 numNothings :: Block -> Int
 numNothings = foldl f 0 
   where 
     f acc curr 
-      | curr == Nothing = acc+1
+      | isNothing curr = acc+1
       | otherwise = acc
 
 sortNothings :: Sudoku -> Pos -> Pos -> Ordering
@@ -125,7 +125,7 @@ sortNothings rs (r1, c1) (r2, c2)
 		h4 = numNothings ((columns rs) !! c2)
 
 blank :: Sudoku -> Pos
-blank rs = head $ hSort rs
+blank = head . hSort
 --blank (Sudoku rs) = head $ nothings rs
 
 --E2
@@ -146,12 +146,12 @@ update rs (i, j) v = [if (ii == i) then (rs!!ii) !!= (j, v) else rs!!ii | ii <- 
 
 --Heuristic to check what has already been used in col/row/block
 rowOptions :: Sudoku -> Pos -> [Int]
-rowOptions sud (i, _) = [x | x <- [1..9], not (elem x r)]
-  where r = [fromJust y | y<-(sud!!i), y /= Nothing]
+rowOptions sud (i, _) = [x | x <- [1..9], notElem x r]
+  where r = [fromJust y | y<-(sud!!i), isJust y]
 
 colOptions :: Sudoku -> Pos -> [Int]
-colOptions sud (_, j) = [x | x <- [1..9], not (elem x cs)]
-  where cs = [fromJust y | y<-(columns sud)!!j, y /= Nothing]
+colOptions sud (_, j) = [x | x <- [1..9], notElem x cs]
+  where cs = [fromJust y | y<-(columns sud)!!j, isJust y]
 
 options :: Sudoku -> Pos -> [Int]
 options sud p = [x | x <- [1..9], notInRows x, notInCols x]
@@ -165,7 +165,7 @@ solve :: Sudoku -> Maybe Sudoku
 solve sud
   | not (isOkay sud) || not (isSudoku sud) = Nothing
   | isSolved sud = Just sud
-  | otherwise = if solutions == [] then Nothing else head solutions 
+  | otherwise = if null solutions then Nothing else head solutions 
     where 
       pos = blank sud
       solutions = filter (/= Nothing) [solve (update sud pos (Just v)) | v <- (options sud pos)] 
